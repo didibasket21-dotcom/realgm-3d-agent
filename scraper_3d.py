@@ -1,8 +1,8 @@
 import pandas as pd
 import requests
 from urllib.parse import urljoin
-import time
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 s = requests.Session()
@@ -24,67 +24,20 @@ LEAGUES = [
 domain = "https://basketball.realgm.com"
 
 
-def fetch_realgm_league(url_path: str) -> pd.DataFrame:
+def fetch_realgm_league(url_path):
     url = urljoin(domain, url_path)
     logging.info(f"Fetching: {url}")
     try:
-        resp = requests.get(url, timeout=30)
+        resp = s.get(url, timeout=30)
         resp.raise_for_status()
-        tables = pd.read_html(resp.text, flavor="lxml", attrs={"class": "table"})
-        df = tables[0]  # zwykle pierwsza tabela to gracze
-        if df.shape[0] == 0:
+        tables = pd.read_html(resp.text)
+        if not tables:
             return pd.DataFrame()
-        # Pierwszy wiersz to nagłówki
-        headers = df.iloc[0]
-        df = df[1:]
-        df.columns = headers
+        df = tables[0]
         return df
     except Exception as e:
         logging.error(f"Fetch error: {e}")
         return pd.DataFrame()
-
-
-def filter_3d_players(df: pd.DataFrame) -> pd.DataFrame:
-    # Uwaga: nazwy kolumn poniżej muszą pasować do RealGM (sprawdzisz po uruchomieniu 1 raz)
-    usage_col = "Usage%"
-    ts_col = "TS%"
-    p3p = "3P%"
-    p3pa = "3PA"
-    mpg = "MPG"
-    drb = "DRB"
-    pf = "PF"
-    tov = "TOV%"
-    ast = "AST%"
-    stl = "STL"
-    blk = "BLK"
-
-    # Jeśli nie ma tych kolumn, przerywamy ten krok dla tej ligi
-    for col in [usage_col, ts_col, p3p, p3pa, mpg, drb, pf, tov, ast]:
-        if col not in df.columns:
-            logging.warning(f"Brak kolumny: {col}, pomijam {len(df)} graczy dla tej ligi.")
-            return pd.DataFrame()
-
-    # 3&D filter
-    cond_usage = (df[usage_col] >= 14.0) & (df[usage_col] <= 22.0)
-    cond_ts = df[ts_col] >= 57.0
-    cond_3p = df[p3p] >= 36.0
-    cond_3pa = df[p3pa] >= 2.0
-    cond_mpg = df[mpg] >= 15.0
-    cond_drb = df[drb] >= 3.0
-    cond_pf = df[pf] <= 3.6
-    cond_tov = df[tov] <= 8.5
-    cond_ast = df[ast] <= 14.0
-
-    guard = (
-        cond_usage & cond_ts & cond_3p & cond_3pa & cond_drb
-        & cond_mpg & cond_tov & cond_ast & cond_pf
-    )
-
-    if stl in df.columns and blk in df.columns:
-        df["STL_BLK"] = df[stl] + df[blk]
-        guard &= df["STL_BLK"] >= 0.9
-
-    return df[guard].copy() if guard.any() else pd.DataFrame()
 
 
 def main():
@@ -101,9 +54,32 @@ def main():
     else:
         final_df = pd.DataFrame({"message": ["No data found"]})
 
-    # zapisz plik w katalogu głównym projektu, gdzie GitHub go szuka
     final_df.to_csv("realgm_3d_players_weekly.csv", index=False)
     logging.info("CSV saved.")
-    
+
+    # --- WYSLANIE MAILA Z CSV --- #
+    # Uwaga: musisz zainstalować yagmail w GitHub Actions
+    try:
+        import yagmail
+
+        # Ustawienia maila - ZMIEŃ NA SWOJE!
+        GMAIL_LOGIN = "didibasket21@gmail.com"            # Twój Gmail
+        GMAIL_APP_PASSWORD = "riac jhxm beqc rczq"    # 16‑znakowy token z App passwords
+        RECIPIENT_EMAIL = "didibasket21@gmail.com"        # adres odbiorcy
+
+        # Wysyłka
+        yag = yagmail.SMTP(GMAIL_LOGIN, GMAIL_APP_PASSWORD)
+        yag.send(
+            to=RECIPIENT_EMAIL,
+            subject="3&D Players Weekly Report – RealGM",
+            contents="Here is your 3&D players list for this week.",
+            attachments="realgm_3d_players_weekly.csv"
+        )
+        logging.info("Email with CSV sent successfully.")
+    except Exception as e:
+        logging.warning(f"Failed to send email: {e}")
+    # -------------------------------- #
+
+
 if __name__ == "__main__":
     main()
