@@ -101,8 +101,9 @@ def main():
     else:
         final_df = pd.DataFrame({"message": ["No data found"]})
 
+    # zapisz plik w katalogu głównym projektu, gdzie GitHub go szuka
     final_df.to_csv("realgm_3d_players_weekly.csv", index=False)
     logging.info("CSV saved.")
-
+    
 if __name__ == "__main__":
     main()
