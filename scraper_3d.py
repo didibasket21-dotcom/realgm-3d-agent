@@ -88,27 +88,21 @@ def filter_3d_players(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
-    all_3d_list = []
+    all_frames = []
     for league_name, url_path in LEAGUES:
         df = fetch_realgm_league(url_path)
         if df.empty:
             continue
+        df["League"] = league_name
+        all_frames.append(df)
 
-        df_3d = filter_3d_players(df)
-        if df_3d.empty:
-            continue
-
-        df_3d["League"] = league_name
-        all_3d_list.append(df_3d)
-        logging.info(f"{league_name}: {len(df_3d)} 3&D players")
-
-    if all_3d_list:
-        final_df = pd.concat(all_3d_list, ignore_index=True)
-        final_df.to_csv("realgm_3d_players_weekly.csv", index=False)
-        logging.info(f"Saved {len(final_df)} 3&D players.")
+    if all_frames:
+        final_df = pd.concat(all_frames, ignore_index=True)
     else:
-        logging.info("No 3&D players found.")
+        final_df = pd.DataFrame({"message": ["No data found"]})
 
+    final_df.to_csv("realgm_3d_players_weekly.csv", index=False)
+    logging.info("CSV saved.")
 
 if __name__ == "__main__":
     main()
