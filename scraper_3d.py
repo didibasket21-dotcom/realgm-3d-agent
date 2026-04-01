@@ -1,18 +1,19 @@
-import os
 import pandas as pd
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 def main():
-    data_path = "data/lnb nowe.csv"  # ZMIEŃ NA SWOJĄ NAZWĘ
-
-    if os.path.exists(data_path):
-        df = pd.read_csv(data_path)
-        print(f"✓ Wczytano {len(df)} graczy z {data_path}")
-    else:
-        df = pd.DataFrame({"message": ["Brak CSV w data/"]})
-        print(f"✗ Nie znaleziono {data_path}")
+    data_path = "data/lnb nowe.csv"
+    
+    try:
+        # NAPRAWIA zepsuty CSV
+        df = pd.read_csv(data_path, on_bad_lines='skip')
+        print(f"✓ Wczytano {len(df)} graczy z LNB")
+        print("Kolumn:", list(df.columns))
+    except Exception as e:
+        print(f"✗ Błąd CSV: {e}")
+        df = pd.DataFrame({"message": ["Błąd CSV"]})
 
     df.to_csv("realgm_3d_players_weekly.csv", index=False)
     print("✓ Zapisano realgm_3d_players_weekly.csv")
