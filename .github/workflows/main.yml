@@ -4,7 +4,6 @@ on:
   workflow_dispatch:  # ręczne uruchomienie
   schedule:
     - cron: '0 9 * * 1'  # cron w poniedziałek
-  workflow_dispatch:
 
 jobs:
   scrape:
