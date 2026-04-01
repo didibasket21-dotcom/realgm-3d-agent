@@ -10,15 +10,15 @@ s.headers["User-Agent"] = "Mozilla/5.0"
 
 # --- LEAGUES (2025) ---
 LEAGUES = [
-    ("Finland Korisliiga", "/international/league/55/Finnish-Korisliiga/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("Sweden Basketligan", "/international/league/32/Swedish-Basketligan/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("Hungary NBIA", "/international/league/28/Hungarian-NBIA/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("France LNB Pro A", "/international/league/6/French-LNB-Pro-A/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("Germany BBL", "/international/league/7/German-Basketball-Bundesliga/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("Spain LEB Oro", "/international/league/18/Spanish-LEB-Oro/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("Italy LBA", "/international/league/3/Italian-Lega-Basket-Serie-A/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("ABA League", "/international/league/66/ABA-League/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
-    ("Belgium BNXT", "/international/league/65/BNXT-League/stats/2025/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Finland Korisliiga", "/international/league/55/Finnish-Korisliiga/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Sweden Basketligan", "/international/league/32/Swedish-Basketligan/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Hungary NBIA", "/international/league/28/Hungarian-NBIA/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("France LNB Pro A", "/international/league/6/French-LNB-Pro-A/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Germany BBL", "/international/league/7/German-Basketball-Bundesliga/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Spain LEB Oro", "/international/league/18/Spanish-LEB-Oro/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Italy LBA", "/international/league/3/Italian-Lega-Basket-Serie-A/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("ABA League", "/international/league/66/ABA-League/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
+    ("Belgium BNXT", "/international/league/65/BNXT-League/stats/2024/Per_Minute/Qualified/All/All/All/asc/1/Regular_Season"),
 ]
 
 domain = "https://basketball.realgm.com"
