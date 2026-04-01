@@ -1,8 +1,9 @@
 name: Run 3&D Scraper Weekly
 
 on:
+  workflow_dispatch:  # ręczne uruchomienie
   schedule:
-    - cron: '0 9 * * 1'
+    - cron: '0 9 * * 1'  # cron w poniedziałek
   workflow_dispatch:
 
 jobs:
