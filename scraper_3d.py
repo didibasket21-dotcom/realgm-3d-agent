@@ -1,6 +1,6 @@
 import pandas as pd
 
-data_path = "data/Arkusz-2-Tabela 1.csv"
+data_path = "data/lnb_advanced.csv"
 
 df = pd.read_csv(data_path, sep=";", header=1)
 print("KOLUMNY:", list(df.columns))
