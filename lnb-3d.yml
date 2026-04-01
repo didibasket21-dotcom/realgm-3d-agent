@@ -1,0 +1,12 @@
+name: LNB 3&D Filter
+
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'  # co poniedziałek o 9:00
+
+jobs:
+  filter:
+    runs-on: ubuntu-latest
+    steps:
+    - uses
