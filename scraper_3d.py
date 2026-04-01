@@ -4,92 +4,68 @@ import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 
-def filter_3d_players(df):
-    # Twój CSV ma: 3PM, 3PA, 3P%, DRB, SPG, BPG, TOV, PF
-    df = df.copy()
+def main():
+    data_path = "data/Arkusz-2-Tabela-1.csv"
+
+    # Wczytaj zaawansowane statystyki LNB
+    df = pd.read_csv(
+        data_path,
+        sep=";",
+        header=1,  # nagłówek w 2. wierszu
+        on_bad_lines="skip"
+    )
     
-    # Konwertuj na numeryczne (usuwamy kropki)
-    for col in ['3P%', 'FG%', 'FT%']:
+    # Usuń pustą pierwszą kolumnę
+    if df.columns[0] == '':
+        df = df.iloc[:, 1:]
+    
+    # Konwertuj na liczby (usuwamy kropki z procentów)
+    pct_cols = ['TS%', 'eFG%', 'ORB%', 'DRB%', 'TRB%', 'AST%', 'TOV%', 'STL%', 'BLK%', 'USG%']
+    for col in pct_cols:
         if col in df.columns:
-            df[col] = df[col].astype(str).str.replace('.', '').astype(float) / 100
+            df[col] = pd.to_numeric(df[col].astype(str).str.replace('.', ''), errors='coerce') / 100
 
-    for col in ['3PM', '3PA', 'FGM', 'FGA', 'FTM', 'FTA', 'ORB', 'DRB', 'RPG', 'APG', 'SPG', 'BPG', 'TOV', 'PF', 'MPG', 'PPG']:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
+    print(f"Wczytano {len(df)} graczy z zaawansowanymi statystykami")
+    print("Kluczowe kolumny:", ['TS%', 'USG%', 'DRB%', 'STL%', 'BLK%'])
 
-    # 3&D BALANCED
-    balanced = (
-        (df['3PA'] >= 3.0) &
-        (df['3P%'] >= 0.35) &
-        (df['DRB'] >= 2.8) &
-        (df['SPG'] + df['BPG'] >= 1.0) &
-        (df['TOV'] <= 3.0) &
-        (df['PF'] <= 2.8)
+    # FILTROWANIE 3&D z zaawansowanymi statystykami
+    balanced_3d = (
+        (df['USG%'].between(0.14, 0.22)) &      # Usage 14-22%
+        (df['TS%'] >= 0.57) &                   # True Shooting >=57%
+        (df['DRB%'] >= 0.12) &                  # Defensive Rebound % >=12%
+        (df['STL%'] + df['BLK%'] >= 0.02) &     # Obrona
+        (df['TOV%'] <= 0.13)                    # Turnover % <=13%
     )
 
-    # 3&D DEFENSIVE
-    defensive = (
-        (df['3PA'] >= 2.5) &
-        (df['3P%'] >= 0.34) &
-        (df['DRB'] >= 2.5) &
-        (df['SPG'] + df['BPG'] >= 1.2) &
-        (df['TOV'] <= 2.5) &
-        (df['PF'] <= 2.5)
+    defensive_3d = (
+        (df['USG%'].between(0.10, 0.18)) &      # Usage 10-18%
+        (df['TS%'] >= 0.56) &                   # TS% >=56%
+        (df['DRB%'] >= 0.11) &                  # DRB% >=11%
+        (df['STL%'] + df['BLK%'] >= 0.025) &    # Więcej obrony
+        (df['TOV%'] <= 0.12)                    # Bardzo mało strat
     )
 
     df['3D_profile'] = 'none'
-    df.loc[balanced, '3D_profile'] = 'balanced'
-    df.loc[defensive, '3D_profile'] = 'defensive'
+    df.loc[balanced_3d, '3D_profile'] = 'balanced'
+    df.loc[defensive_3d, '3D_profile'] = 'defensive'
 
-    # Score
-    df['3D_score_balanced'] = (
-        df['3P%'] * 30 +
-        df['DRB'] * 10 +
-        (df['SPG'] + df['BPG']) * 20 -
-        df['TOV'] * 5
+    # 3&D Score
+    df['3D_score'] = (
+        df['TS%'] * 30 +
+        df['USG%'] * 20 +
+        df['DRB%'] * 25 +
+        (df['STL%'] + df['BLK%']) * 30 -
+        df['TOV%'] * 20 +
+        df['PER'] * 5
     )
 
-    df['3D_score_defensive'] = (
-        df['3P%'] * 25 +
-        df['DRB'] * 15 +
-        (df['SPG'] + df['BPG']) * 25 -
-        df['TOV'] * 8
-    )
+    # ZAPIS TYLKO graczy 3&D
+    result = df[df['3D_profile'] != 'none'].sort_values('3D_score', ascending=False)
 
-    return df[df['3D_profile'] != 'none'].sort_values('3D_score_balanced', ascending=False)
+    print(f"✓ Znaleziono {len(result)} graczy 3&D z LNB Advanced Stats")
 
-def main():
-    data_path = "data/lnb nowe.csv"
-
-    try:
-        df = pd.read_csv(
-            data_path,
-            sep=";",
-            header=None,
-            names=[
-                "empty", "#", "Player", "Team", "GP", "MPG", "PPG",
-                "FGM", "FGA", "FG%", "3PM", "3PA", "3P%",
-                "FTM", "FTA", "FT%", "ORB", "DRB", "RPG",
-                "APG", "SPG", "BPG", "TOV", "PF"
-            ],
-            on_bad_lines="skip"
-        )
-
-        df = df.iloc[2:].copy()
-        df = df.drop(columns=["empty"], errors="ignore")
-
-        print(f"Wczytano {len(df)} graczy z LNB")
-
-        final_df = filter_3d_players(df)
-        print(f"Znalezione 3&D graczy: {len(final_df)}")
-
-        final_df.to_csv("realgm_3d_players_weekly.csv", index=False)
-        print("✓ Zapisano realgm_3d_players_weekly.csv")
-
-    except Exception as e:
-        print(f"BLAD: {e}")
-        final_df = pd.DataFrame({"message": ["Błąd"]})
-        final_df.to_csv("realgm_3d_players_weekly.csv", index=False)
+    result.to_csv("lnb_3d_advanced_players.csv", index=False)
+    print("✓ Zapisano lnb_3d_advanced_players.csv")
 
 if __name__ == "__main__":
     main()
