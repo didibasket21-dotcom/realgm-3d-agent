@@ -1,8 +1,11 @@
 import pandas as pd
-import logging
 import numpy as np
 
-logging.basicConfig(level=logging.INFO)
-
 def main():
-    data
+    df = pd.read_csv('data/lnb_advanced.csv', sep=';', skiprows=1)
+
+    # Usuń pierwszą kolumnę
+    df = df.iloc[:, 1:]
+    
+    # Nazwij kolumny
+    df.columns
