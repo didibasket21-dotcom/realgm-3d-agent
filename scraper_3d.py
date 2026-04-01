@@ -5,7 +5,7 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 
 def main():
-    data_path = "data/Arkusz-2-Tabela-1.csv"
+    data_path = "data/Arkusz-2-Tabela 1.csv"
 
     # Wczytaj zaawansowane statystyki LNB
     df = pd.read_csv(
